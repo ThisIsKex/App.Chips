@@ -1,0 +1,17 @@
+type CashSession @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  sessionName: String!
+}
+
+type User @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  session: CashSession! @hasOne
+  username: String!
+}
+
+type Expense @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  session: CashSession! @hasOne
+  user: User! @hasOne
+  expenseAmount: Float!
+}
