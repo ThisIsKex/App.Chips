@@ -5,10 +5,13 @@
       <v-container>
         <v-card>
           <v-card-title> Session - {{ session?.sessionName }} </v-card-title>
+          <v-card-text>
+            <v-chip color="primary">{{ currentUser.username }}</v-chip>
+          </v-card-text>
         </v-card>
         <create-expense :session-id="sessionId" :user-id="currentUser.id" />
-        <expenses-card :expenses="expenses" :users="users" />
-        <transactions-card :expenses="expenses" :users="users" />
+        <expenses-card :expenses="expenses" :users="users" :current-user="currentUser" />
+        <transactions-card :expenses="expenses" :users="users" :current-user="currentUser" />
       </v-container>
     </v-col>
   </v-row>

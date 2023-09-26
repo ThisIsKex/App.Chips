@@ -46,8 +46,8 @@ export function calculateTransactions(participants: Participant[]): Transaction[
 
       transactions.push({
         id,
-        debtor: debtor.name,
-        creditor: creditor.name,
+        debtor: { id: debtor.id, name: debtor.name },
+        creditor: { id: creditor.id, name: creditor.name },
         amount: transactionAmount
       });
 

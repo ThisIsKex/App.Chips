@@ -66,7 +66,7 @@ export const useUserStore = defineStore("user", () => {
     try {
       const filter: ModelUserFilterInput = {
         userSessionId: { eq: sessionId },
-        username: { eq: username }
+        username: { contains: username }
       };
 
       const variables: ListUsersQueryVariables = {

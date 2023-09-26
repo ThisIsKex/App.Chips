@@ -9,10 +9,22 @@
         <v-col cols="12"> Amount to pay per Person: {{ amountToPayPerUser.toFixed(2) }} € </v-col>
       </v-row>
       <v-row v-for="transaction in transactions" :key="transaction.id" dense>
-        <v-col cols="3"> {{ transaction.debtor }} </v-col>
-        <v-col cols="3"> ows </v-col>
-        <v-col cols="3"> {{ transaction.creditor }} </v-col>
-        <v-col cols="3"> {{ transaction.amount.toFixed(2) }} € </v-col>
+        <v-col cols="3">
+          <v-chip :color="transaction.debtor.id === currentUser.id ? 'primary' : 'secondary'">
+            {{ transaction.debtor.name }}
+          </v-chip>
+        </v-col>
+        <v-col cols="3">
+          <v-chip variant="text">owes</v-chip>
+        </v-col>
+        <v-col cols="3">
+          <v-chip :color="transaction.creditor.id === currentUser.id ? 'primary' : 'secondary'">
+            {{ transaction.creditor.name }}
+          </v-chip>
+        </v-col>
+        <v-col cols="3">
+          <v-chip variant="outlined" color="info">{{ transaction.amount.toFixed(2) }} €</v-chip>
+        </v-col>
       </v-row>
       <v-row v-if="transactions.length === 0">
         <v-col cols="12">No transactions left for this session.</v-col>
@@ -30,6 +42,7 @@ import type { UserResponse } from "../stores/UserStore";
 const props = defineProps<{
   expenses: Array<ExpenseResponse>;
   users: Array<UserResponse>;
+  currentUser: UserResponse;
 }>();
 
 const transactions = ref<Transaction[]>([]);
