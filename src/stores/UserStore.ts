@@ -1,5 +1,4 @@
-import type { GraphQLQuery } from "@aws-amplify/api";
-import { API } from "aws-amplify";
+import { generateClient, type GraphQLQuery } from "@aws-amplify/api";
 import { defineStore } from "pinia";
 import type {
   CreateUserInput,
@@ -20,6 +19,8 @@ export interface UserResponse {
 }
 
 export const useUserStore = defineStore("user", () => {
+  const client = generateClient();
+
   async function create(username: string, userSessionId: string) {
     try {
       const input: CreateUserInput = {
@@ -27,7 +28,7 @@ export const useUserStore = defineStore("user", () => {
         userSessionId
       };
 
-      const createUserResult = await API.graphql<GraphQLQuery<CreateUserMutation>>({
+      const createUserResult = await client.graphql<GraphQLQuery<CreateUserMutation>>({
         query: createUser,
         variables: {
           input
@@ -50,7 +51,7 @@ export const useUserStore = defineStore("user", () => {
         filter
       };
 
-      const getUsersResult = await API.graphql<GraphQLQuery<ListUsersQuery>>({
+      const getUsersResult = await client.graphql<GraphQLQuery<ListUsersQuery>>({
         query: listUsers,
         variables
       });
@@ -73,7 +74,7 @@ export const useUserStore = defineStore("user", () => {
         filter
       };
 
-      const getUsersResult = await API.graphql<GraphQLQuery<ListUsersQuery>>({
+      const getUsersResult = await client.graphql<GraphQLQuery<ListUsersQuery>>({
         query: listUsers,
         variables
       });

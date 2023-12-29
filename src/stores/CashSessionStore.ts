@@ -1,5 +1,4 @@
-import type { GraphQLQuery } from "@aws-amplify/api";
-import { API } from "aws-amplify";
+import { generateClient, type GraphQLQuery } from "@aws-amplify/api";
 import { defineStore } from "pinia";
 import type {
   CreateCashSessionInput,
@@ -11,13 +10,14 @@ import { createCashSession } from "../graphql/mutations";
 import { getCashSession } from "../graphql/queries";
 
 export const useCashSessionStore = defineStore("cashSession", () => {
+  const client = generateClient();
   async function create(sessionName: string) {
     try {
       const input: CreateCashSessionInput = {
         sessionName
       };
 
-      const result = await API.graphql<GraphQLQuery<CreateCashSessionMutation>>({
+      const result = await client.graphql<GraphQLQuery<CreateCashSessionMutation>>({
         query: createCashSession,
         variables: {
           input
@@ -37,7 +37,7 @@ export const useCashSessionStore = defineStore("cashSession", () => {
         id
       };
 
-      const graphQlResult = await API.graphql<GraphQLQuery<GetCashSessionQuery>>({
+      const graphQlResult = await client.graphql<GraphQLQuery<GetCashSessionQuery>>({
         query: getCashSession,
         variables
       });

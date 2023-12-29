@@ -1,7 +1,10 @@
 <template>
   <loading-overlay :show="isLoading" />
   <v-row v-if="!isLoading && session && currentUser" justify="center">
-    <v-col cols="6">
+    <div class="share-button">
+      <v-btn icon="mdi-share" @click="copyUrl"></v-btn>
+    </div>
+    <v-col cols="8">
       <v-container>
         <v-card>
           <v-card-title> Session - {{ session?.sessionName }} </v-card-title>
@@ -41,6 +44,13 @@ const userStore = useUserStore();
 const casSessionStore = useCashSessionStore();
 const expenseStore = useExpenseStore();
 
+function copyUrl() {
+  const url = document.location.href;
+  console.log(url);
+
+  navigator.clipboard.writeText(url);
+}
+
 function handleGoBack() {
   sessionId.value
     ? router.push({ name: "join", params: { id: sessionId.value } })
@@ -73,3 +83,10 @@ onMounted(async () => {
   isLoading.value = false;
 });
 </script>
+<style>
+.share-button {
+  position: absolute;
+  top: 25px;
+  right: 0px;
+}
+</style>

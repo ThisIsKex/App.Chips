@@ -1,5 +1,4 @@
-import type { GraphQLQuery } from "@aws-amplify/api";
-import { API } from "aws-amplify";
+import { generateClient, type GraphQLQuery } from "@aws-amplify/api";
 import { defineStore } from "pinia";
 import type {
   CreateExpenseMutation,
@@ -21,6 +20,8 @@ export interface ExpenseResponse {
 }
 
 export const useExpenseStore = defineStore("expense", () => {
+  const client = generateClient();
+
   async function listSessionExpenses(
     sessionId: string,
     nextToken: string | null | undefined = null
@@ -35,7 +36,7 @@ export const useExpenseStore = defineStore("expense", () => {
         nextToken
       };
 
-      const result = await API.graphql<GraphQLQuery<ListExpensesQuery>>({
+      const result = await client.graphql<GraphQLQuery<ListExpensesQuery>>({
         query: listExpenses,
         variables
       });
@@ -78,7 +79,7 @@ export const useExpenseStore = defineStore("expense", () => {
           expenseUserId: userId
         }
       };
-      const result = await API.graphql<GraphQLQuery<CreateExpenseMutation>>({
+      const result = await client.graphql<GraphQLQuery<CreateExpenseMutation>>({
         query: createExpense,
         variables
       });

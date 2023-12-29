@@ -1,11 +1,12 @@
+import "@mdi/font/css/materialdesignicons.css";
 import "./assets/main.css";
 
-import { createApp } from "vue";
-import App from "./App.vue";
-import router from "./router";
-
 import { Amplify } from "aws-amplify";
-import awsExports from "./aws-exports";
+import { createApp } from "vue";
+import { aliases, mdi } from "vuetify/iconsets/mdi";
+import App from "./App.vue";
+import configuration from "./amplifyconfiguration.json";
+import router from "./router";
 
 // Vuetify
 import { createPinia } from "pinia";
@@ -17,12 +18,19 @@ import "vuetify/styles";
 const vuetify = createVuetify({
   components,
   directives,
+  icons: {
+    defaultSet: "mdi",
+    aliases,
+    sets: {
+      mdi
+    }
+  },
   theme: {
     defaultTheme: "light"
   }
 });
 
-Amplify.configure(awsExports);
+Amplify.configure(configuration);
 
 const pinia = createPinia();
 
