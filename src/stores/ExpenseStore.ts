@@ -3,11 +3,13 @@ import { defineStore } from "pinia";
 import type {
   CreateExpenseMutation,
   CreateExpenseMutationVariables,
+  DeleteExpenseMutation,
+  DeleteExpenseMutationVariables,
   ListExpensesQuery,
   ListExpensesQueryVariables,
   ModelExpenseFilterInput
 } from "../API";
-import { createExpense } from "../graphql/mutations";
+import { createExpense, deleteExpense } from "../graphql/mutations";
 import { listExpenses } from "../graphql/queries";
 
 export interface ExpenseResponse {
@@ -84,12 +86,31 @@ export const useExpenseStore = defineStore("expense", () => {
         variables
       });
 
-      return result.data?.createExpense?.id != undefined;
+      return result.data?.createExpense;
     } catch (error) {
       console.log(error);
       return false;
     }
   }
 
-  return { create, listSessionExpenses, listAllSessionExpenses };
+  async function deleteUserExpense(id: string) {
+    try {
+      const variables: DeleteExpenseMutationVariables = {
+        input: {
+          id
+        }
+      };
+      const result = await client.graphql<GraphQLQuery<DeleteExpenseMutation>>({
+        query: deleteExpense,
+        variables
+      });
+
+      return result.data?.deleteExpense?.id;
+    } catch (error) {
+      console.log(error);
+      return undefined;
+    }
+  }
+
+  return { create, listSessionExpenses, listAllSessionExpenses, deleteUserExpense };
 });

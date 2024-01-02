@@ -27,14 +27,13 @@
         </v-col>
       </v-row>
       <v-row v-if="transactions.length === 0">
-        <v-col cols="12">No transactions left for this session.</v-col>
+        <v-col cols="12">No transactions done for this session.</v-col>
       </v-row>
     </v-card-text>
   </v-card>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import type { Transaction } from "../interfaces/calculation";
+import { computed, onMounted } from "vue";
 import { calculateTotalExpenses, calculateTransactions } from "../services/calculation";
 import type { ExpenseResponse } from "../stores/ExpenseStore";
 import type { UserResponse } from "../stores/UserStore";
@@ -45,22 +44,25 @@ const props = defineProps<{
   currentUser: UserResponse;
 }>();
 
-const transactions = ref<Transaction[]>([]);
-const amountToPayPerUser = ref<number>(0);
-const sum = ref<number>(0);
+const sum = computed(() => {
+  return calculateSum();
+});
 
-onMounted(() => {
-  sum.value = calculateSum();
-  amountToPayPerUser.value = sum.value / props.users.length;
-
+const transactions = computed(() => {
   const participants = calculateTotalExpenses(
     props.expenses,
     props.users,
     amountToPayPerUser.value
   );
 
-  transactions.value = calculateTransactions(participants);
+  return calculateTransactions(participants);
 });
+
+const amountToPayPerUser = computed(() => {
+  return sum.value / props.users.length;
+});
+
+onMounted(() => {});
 
 function calculateSum() {
   return props.expenses.map((x) => x.expenseAmount).reduce((a, b) => a + b, 0);
