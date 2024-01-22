@@ -22,18 +22,18 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           # AWS Region, e.g. us-east-2
-          aws-region: $AWS_REGION
+          aws-region: ${{ secrets.AWS_REGION }}
           # The Amazon Resource Name (ARN) of the role to assume. Use the provided credentials to assume an IAM role and configure the Actions environment with the assumed role credentials rather than with the provided credentials.
           
           # AWS Access Key ID. Provide this key if you want to assume a role using access keys rather than a web identity token.
-          aws-access-key-id: $AWS_ACCESS_KEY_ID
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS Secret Access Key. Required if aws-access-key-id is provided.
-          aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 
       - name: Deploy to Amplify
         run: |
-          amplify pull --appId $AWS_AMPLIFY_APP_ID --yes
-          amplify env add --envName $AWS_AMPLIFY_ENV_NAME --yes
+          amplify pull --appId ${{ secrets.AWS_AMPLIFY_APP_ID }} --yes
+          amplify env add --envName ${{ secrets.AWS_AMPLIFY_ENV_NAME }} --yes
           amplify push --yes
           amplify publish --yes
           
