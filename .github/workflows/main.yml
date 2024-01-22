@@ -1,0 +1,32 @@
+name: Deploy to Amplify
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Amplify CLI
+        run: npm install -g @aws-amplify/cli
+
+      - name: Configure Amplify
+        run: |
+          echo "Configuring Amplify"
+          amplify configure set accessKeyId $AWS_ACCESS_KEY_ID
+          amplify configure set secretAccessKey $AWS_SECRET_ACCESS_KEY
+          amplify configure set region $AWS_REGION
+
+      - name: Deploy to Amplify
+        run: |
+          amplify pull --appId $AWS_AMPLIFY_APP_ID --yes
+          amplify env add --envName $AWS_AMPLIFY_ENV_NAME --yes
+          amplify push --yes
+          amplify publish --yes
+          
