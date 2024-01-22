@@ -1,6 +1,6 @@
 # CHIPS
 
-Collaborative Handling of Individual Payments and Splitting
+**C**ollaborative **H**andling of **I**ndividual **P**ayments and **S**plitting
 
 ## Project Setup
 
