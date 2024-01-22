@@ -32,7 +32,7 @@ jobs:
                 
       - name: Deploy to Amplify
         run: |
-          amplify pull --appId ${{ secrets.AWS_AMPLIFY_APP_ID }} --yes
+          amplify pull --appId ${{ secrets.AWS_AMPLIFY_APP_ID }} --envName dev --yes
           amplify env add --envName ${{ secrets.AWS_AMPLIFY_ENV_NAME }} --yes
           amplify push --yes
           amplify publish --yes
