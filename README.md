@@ -26,3 +26,7 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Deployment
+
+It is necessary that at least one env exist in the Amplify App. Otherwise the pipeline is not able to checkout the project.
