@@ -35,13 +35,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { calculateTotalExpenses, calculateTransactions } from "../services/calculation";
-import type { ExpenseResponse } from "../stores/ExpenseStore";
-import type { UserResponse } from "../stores/UserStore";
+import type { CashSession, User } from "@/interfaces/cashSession";
 
 const props = defineProps<{
-  expenses: Array<ExpenseResponse>;
-  users: Array<UserResponse>;
-  currentUser: UserResponse;
+  cashSession: CashSession;
+  currentUser: User;
 }>();
 
 const sum = computed(() => {
@@ -50,8 +48,8 @@ const sum = computed(() => {
 
 const transactions = computed(() => {
   const participants = calculateTotalExpenses(
-    props.expenses,
-    props.users,
+    props.cashSession.expenses,
+    props.cashSession.users,
     amountToPayPerUser.value
   );
 
@@ -59,12 +57,13 @@ const transactions = computed(() => {
 });
 
 const amountToPayPerUser = computed(() => {
-  return sum.value / props.users.length;
+  return sum.value / props.cashSession.users.length;
 });
 
-onMounted(() => {});
+onMounted(() => { });
 
 function calculateSum() {
-  return props.expenses.map((x) => x.expenseAmount).reduce((a, b) => a + b, 0);
+  const sum = props.cashSession.expenses.map((x) => x.amount).reduce((a, b) => a + b, 0);
+  return sum;
 }
 </script>

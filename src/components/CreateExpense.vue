@@ -12,27 +12,19 @@
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
-import { useExpenseStore, type ExpenseResponse } from "../stores/ExpenseStore";
 
 const expense = ref<number>();
 
-const props = defineProps<{ sessionId: string; userId: string }>();
-const expenseStore = useExpenseStore();
-
 const emit = defineEmits<{
-  (event: "add:expense", value: ExpenseResponse): void;
+  (event: "add:expense", value: number): void;
 }>();
 
-async function createExpense() {
+function createExpense() {
   if (!expense.value) {
     return;
   }
 
-  const result = await expenseStore.create(props.sessionId, props.userId, expense.value);
-  if (!result) {
-    return;
-  }
+  emit("add:expense", expense.value);
   expense.value = null!;
-  emit("add:expense", result);
 }
 </script>

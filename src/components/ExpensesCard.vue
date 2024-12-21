@@ -2,15 +2,15 @@
   <v-card class="mt-4">
     <v-card-title>Expenses</v-card-title>
     <v-card-text>
-      <v-row v-for="user in users" :key="user!.id" dense>
+      <v-row v-for="user in cashSession.users" :key="user.id" dense>
         <v-col cols="6">
           <v-chip :color="user.id === currentUser.id ? 'primary' : 'secondary'">{{
-            user.username
+            user.name
           }}</v-chip>
         </v-col>
         <v-col cols="6">
           <v-chip variant="outlined" color="info">
-            {{ getUserExpenses(expenses, user!.id) }} €
+            {{ getUserExpenses(cashSession.expenses, user.id) }} €
           </v-chip>
         </v-col>
       </v-row>
@@ -18,9 +18,8 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import { getUserExpenses } from "../services/calculation";
-import type { ExpenseResponse } from "../stores/ExpenseStore";
-import type { UserResponse } from "../stores/UserStore";
+import type { CashSession, User } from "@/interfaces/cashSession";
+import { getUserExpenses } from "@/services/calculation";
 
-defineProps<{ expenses: ExpenseResponse[]; users: UserResponse[]; currentUser: UserResponse }>();
+defineProps<{ cashSession: CashSession, currentUser: User }>();
 </script>

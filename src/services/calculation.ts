@@ -1,16 +1,15 @@
+import type { Expense, User } from "@/interfaces/cashSession";
 import type { Participant, Transaction } from "../interfaces/calculation";
-import type { ExpenseResponse } from "../stores/ExpenseStore";
-import type { UserResponse } from "../stores/UserStore";
 
-export function getUserExpenses(expenses: ExpenseResponse[], userId: string) {
-  const userExpenses = expenses.filter((x) => x.expenseUserId === userId);
-  const totalUserExpenses = userExpenses.map((x) => x.expenseAmount).reduce((a, b) => a + b, 0);
+export function getUserExpenses(expenses: Expense[], userId: string) {
+  const userExpenses = expenses.filter((x) => x.userId === userId);
+  const totalUserExpenses = userExpenses.map((x) => x.amount).reduce((a, b) => a + b, 0);
   return totalUserExpenses;
 }
 
 export function calculateTotalExpenses(
-  expenses: ExpenseResponse[],
-  users: UserResponse[],
+  expenses: Expense[],
+  users: User[],
   amountToPayPerUser: number
 ): Participant[] {
   const result: Participant[] = [];
@@ -18,7 +17,7 @@ export function calculateTotalExpenses(
   for (const user of users) {
     const totalUserExpenses = getUserExpenses(expenses, user.id);
     const balance = totalUserExpenses - amountToPayPerUser;
-    result.push({ id: user.id, name: user.username, balance });
+    result.push({ id: user.id, name: user.name, balance });
   }
 
   return result;

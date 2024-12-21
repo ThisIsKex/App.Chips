@@ -39,7 +39,6 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import router from "../router";
 import { useCashSessionStore } from "../stores/CashSessionStore";
-import { useUserStore } from "../stores/UserStore";
 
 const username = ref<string>("");
 const sessionName = ref<string>("");
@@ -47,7 +46,6 @@ const sessionId = ref<string>("");
 const isLoading = ref<boolean>(false);
 
 const cashSessionStore = useCashSessionStore();
-const userStore = useUserStore();
 
 async function createSession() {
   if (!username.value || !sessionName.value) {
@@ -55,12 +53,10 @@ async function createSession() {
   }
 
   isLoading.value = true;
-
-  const createSessionResult = await cashSessionStore.create(sessionName.value);
-  const createUserResult = await userStore.create(username.value, createSessionResult.id);
-
+  const createSessionResult = await cashSessionStore.create({ name: sessionName.value, users: [username.value] });
+  localStorage.setItem(createSessionResult.id, createSessionResult.users[0].id);
   isLoading.value = false;
-  localStorage.setItem(createSessionResult.id, createUserResult.id);
+
   router.push({ name: "session", params: { id: createSessionResult.id } });
 }
 
@@ -70,14 +66,11 @@ async function joinSession() {
   }
 
   isLoading.value = true;
-  const availableUser = await userStore.findUserInSession(username.value, sessionId.value);
-  let userId = availableUser?.id;
-  if (!userId) {
-    const createUserResult = await userStore.create(username.value, sessionId.value);
-    userId = createUserResult.id;
-  }
+  const joinResult = await cashSessionStore.joinSession(sessionId.value, { userName: username.value });
+  const currentUser = joinResult?.users.find((x) => x.name === username.value)!;
+  localStorage.setItem(sessionId.value, currentUser.id);
   isLoading.value = false;
-  localStorage.setItem(sessionId.value, userId);
+
   router.go(0);
 }
 

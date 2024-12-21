@@ -1,11 +1,9 @@
 import "@mdi/font/css/materialdesignicons.css";
 import "./assets/main.css";
 
-import { Amplify } from "aws-amplify";
 import { createApp } from "vue";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
 import App from "./App.vue";
-import configuration from "./amplifyconfiguration.json";
 import router from "./router";
 
 // Vuetify
@@ -14,6 +12,7 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import "vuetify/styles";
+import axios from "axios";
 
 const vuetify = createVuetify({
   components,
@@ -30,7 +29,7 @@ const vuetify = createVuetify({
   }
 });
 
-Amplify.configure(configuration);
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const pinia = createPinia();
 

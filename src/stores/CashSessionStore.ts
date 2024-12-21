@@ -1,52 +1,58 @@
-import { generateClient, type GraphQLQuery } from "@aws-amplify/api";
+import type { CreateExpense, CashSession, CreateCashSession, JoinSession } from "@/interfaces/cashSession";
+import axios from "axios";
 import { defineStore } from "pinia";
-import type {
-  CreateCashSessionInput,
-  CreateCashSessionMutation,
-  GetCashSessionQuery,
-  GetCashSessionQueryVariables
-} from "../API";
-import { createCashSession } from "../graphql/mutations";
-import { getCashSession } from "../graphql/queries";
 
 export const useCashSessionStore = defineStore("cashSession", () => {
-  const client = generateClient();
-  async function create(sessionName: string) {
+  async function create(cashSession: CreateCashSession): Promise<CashSession> {
     try {
-      const input: CreateCashSessionInput = {
-        sessionName
-      };
-
-      const result = await client.graphql<GraphQLQuery<CreateCashSessionMutation>>({
-        query: createCashSession,
-        variables: {
-          input
-        }
-      });
-
-      return result.data!.createCashSession!;
+      const response = await axios.post<CashSession>("/", cashSession)
+      return response.data;
     } catch (error) {
       console.error(error);
       throw new Error("Error occurred during session creation process.");
     }
   }
 
-  async function getSession(id: string) {
+  async function getSession(id: string): Promise<CashSession | null> {
     try {
-      const variables: GetCashSessionQueryVariables = {
-        id
-      };
-
-      const graphQlResult = await client.graphql<GraphQLQuery<GetCashSessionQuery>>({
-        query: getCashSession,
-        variables
-      });
-      return graphQlResult.data!.getCashSession ?? null;
+      const response = await axios.get<CashSession>(`?id=${id}`);
+      return response.data;
     } catch (error) {
       console.error(error);
       return null;
     }
   }
 
-  return { create, getSession };
+  async function addExpense(sessionId: string, createExpense: CreateExpense): Promise<CashSession | null> {
+    try {
+      const response = await axios.put<CashSession>(`/add-expense?id=${sessionId}`, createExpense);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async function joinSession(sessionId: string, joinSession: JoinSession): Promise<CashSession | null> {
+    try {
+      const response = await axios.put<CashSession>(`/join-session?id=${sessionId}`, joinSession);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+
+  async function deleteExpense(sessionId: string, expenseId: string): Promise<CashSession | null> {
+    try {
+      const response = await axios.put<CashSession>(`/delete-expense?id=${sessionId}`, { "expenseId": expenseId });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  return { create, getSession, addExpense, joinSession, deleteExpense };
 });

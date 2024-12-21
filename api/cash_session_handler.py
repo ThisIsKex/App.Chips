@@ -58,7 +58,41 @@ def get_item(event):
 
         return {
             "statusCode": 200,
-            "body": json.dumps(item),
+            "body": json.dumps(item, default=decimal_default),
+        }
+    except Exception as e:
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+
+def join_session(event):
+    body = json.loads(event["body"])
+    item_id = event["queryStringParameters"].get("id")
+    username = body.get("userName")
+    if not item_id or not username:
+        return {
+            "statusCode": 400,
+            "body": json.dumps(
+                {"error": "The 'id', 'userId', and 'expense' fields are required"}
+            ),
+        }
+    try:
+        response = table.get_item(Key={"id": item_id})
+        item = response.get("Item")
+        if not item:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"error": "Item not found"}),
+            }
+        user_id = generate_unique_id()
+        new_user = {
+            "id": user_id,
+            "name": username,
+        }
+        item["users"].append(new_user)
+        table.put_item(Item=item)
+        return {
+            "statusCode": 200,
+            "body": json.dumps(item, default=decimal_default),
         }
     except Exception as e:
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
@@ -66,7 +100,6 @@ def get_item(event):
 
 def add_expense(event):
     body = json.loads(event["body"])
-    print(event)
     item_id = event["queryStringParameters"].get("id")
     amount = body.get("amount")
     user_id = body.get("userId")
@@ -91,8 +124,8 @@ def add_expense(event):
         expense_id = generate_unique_id()
         new_expense = {
             "id": expense_id,
-            "user_id": user_id,
-            "amount": amount,
+            "userId": user_id,
+            "amount": Decimal(amount),
         }
 
         if "expenses" not in item or not item["expenses"]:
@@ -100,6 +133,42 @@ def add_expense(event):
         else:
             item["expenses"].append(new_expense)
 
+        table.put_item(Item=item)
+        return {
+            "statusCode": 200,
+            "body": json.dumps(item, default=decimal_default),
+        }
+    except Exception as e:
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+
+
+def delete_expense(event):
+    body = json.loads(event["body"])
+    item_id = event["queryStringParameters"].get("id")
+    expense_id = body.get("expenseId")
+
+    if not item_id or not expense_id:
+        return {
+            "statusCode": 400,
+            "body": json.dumps(
+                {"error": "The 'id' and 'expenseId' fields are required"}
+            ),
+        }
+
+    try:
+        response = table.get_item(Key={"id": item_id})
+        item = response.get("Item")
+        if not item:
+            return {
+                "statusCode": 404,
+                "body": json.dumps({"error": "Item not found"}),
+            }
+        print(item)
+
+        item["expenses"] = [
+            expense for expense in item["expenses"] if expense["id"] != expense_id
+        ]
+        print(item)
         table.put_item(Item=item)
         return {
             "statusCode": 200,
@@ -128,26 +197,15 @@ def main(event, context):
     elif http_method == "PUT":
         if event["path"] == "/add-expense":
             return add_expense(event)
-        elif event["path"] == "/add-user":
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "The 'id' path parameter is required"}),
-            }
+        elif event["path"] == "/join-session":
+            return join_session(event)
+        elif event["path"] == "/delete-expense":
+            return delete_expense(event)
         else:
             return {
                 "statusCode": 400,
                 "body": json.dumps({"error": "Unsupported path"}),
             }
-
-    elif http_method == "DELETE":
-        # Implement DELETE logic here
-        return {
-            "statusCode": 200,
-            "body": json.dumps({"message": "DELETE method not implemented"}),
-        }
-
-    else:
-        return {"statusCode": 400, "body": json.dumps({"error": "Unsupported method"})}
 
 
 def generate_unique_id():

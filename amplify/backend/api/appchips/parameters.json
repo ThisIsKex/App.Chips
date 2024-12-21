@@ -1,6 +1,0 @@
-{
-  "AppSyncApiName": "appchips",
-  "DynamoDBBillingMode": "PAY_PER_REQUEST",
-  "DynamoDBEnableServerSideEncryption": false,
-  "AuthModeLastUpdated": "2023-12-29T13:48:27.962Z"
-}
