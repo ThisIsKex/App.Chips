@@ -16,7 +16,7 @@ resource "aws_dynamodb_table" "cash_sessions" {
 
 data "archive_file" "python_lambda_package" {
   type        = "zip"
-  source_file = "${path.module}/../../api/cash_session_handler.py"
+  source_file = "${path.module}/../api/cash_session_handler.py"
   output_path = "cash_session_handler.zip"
 }
 
