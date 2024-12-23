@@ -1,3 +1,0 @@
-locals {
-  project = "appchips"
-}

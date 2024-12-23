@@ -51,7 +51,7 @@ terraform.rc
 
 # Ignore lock files
 .terraform.lock.hcl
-
+backend.tf
 # ignore deployment files
 deployment/**/*.zip
 
