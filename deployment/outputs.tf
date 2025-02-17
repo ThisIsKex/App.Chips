@@ -5,3 +5,7 @@ output "api_gateway_url" {
 output "CDN" {
   value = aws_cloudfront_origin_access_identity.frontend_identity.id
 }
+
+output "frontend_url" {
+  value = aws_cloudfront_distribution.frontend_distribution.domain_name
+}

@@ -54,5 +54,6 @@ terraform.rc
 backend.tf
 # ignore deployment files
 deployment/**/*.zip
+deployment/package/*
 
 .env
