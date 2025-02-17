@@ -14,20 +14,15 @@ resource "aws_dynamodb_table" "cash_sessions" {
   }
 }
 
-data "archive_file" "python_lambda_package" {
-  type        = "zip"
-  source_file = "${path.module}/../api/cash_session_handler.py"
-  output_path = "cash_session_handler.zip"
-}
 
 resource "aws_lambda_function" "cash_session" {
   function_name = "${var.project}-backend"
-  handler       = "cash_session_handler.main"
+  handler       = "cash_session_handler.lambda_handler"
   runtime       = "python3.9"
   role          = aws_iam_role.lambda_exec.arn
 
   # filename = "${path.module}/../../api/cash_session_handler.zip" 
-  source_code_hash = data.archive_file.python_lambda_package.output_base64sha256
+  source_code_hash = filebase64sha256("cash_session_handler.zip")
   filename         = "cash_session_handler.zip"
 
   environment {
@@ -52,6 +47,12 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.http_api.id
   integration_type = "AWS_PROXY"
   integration_uri  = aws_lambda_function.cash_session.invoke_arn
+}
+
+resource "aws_apigatewayv2_route" "options" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "OPTIONS /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "main" {

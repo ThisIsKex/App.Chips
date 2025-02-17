@@ -1,10 +1,29 @@
-from decimal import Decimal
-import json
 import boto3
+import json
 import os
+import uuid
+
+from decimal import Decimal
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.event_handler import APIGatewayRestResolver, CORSConfig
+from aws_lambda_powertools.utilities.typing import LambdaContext
+from aws_lambda_powertools.event_handler.exceptions import (
+    NotFoundError,
+    BadRequestError,
+)
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["DYNAMODB_TABLE"])
+logger = Logger()
+
+cors_config = CORSConfig(
+    allow_origin="*",
+)
+app = APIGatewayRestResolver(cors=cors_config)
+
+
+def generate_unique_id() -> str:
+    return str(uuid.uuid4())
 
 
 def decimal_default(obj):
@@ -13,202 +32,133 @@ def decimal_default(obj):
     raise TypeError
 
 
-def create(event):
-    try:
-        body = json.loads(event["body"])
+@app.post("/")
+def create():
+    logger.info("Creating a new cash session")
+    body = json.loads(app.current_event["body"])
+    name = body["name"]
+    users = body["users"]
+    id = generate_unique_id()
+    user_id = generate_unique_id()
 
-        name = body["name"]
-        users = body["users"]
+    item = {
+        "id": id,
+        "name": name,
+        "users": [{"id": user_id, "name": users[0]}],
+        "expenses": [],
+    }
 
-        id = generate_unique_id()
-        user_id = generate_unique_id()
-
-        item = {
-            "id": id,
-            "name": name,
-            "users": [{"id": user_id, "name": users[0]}],
-            "expenses": [],
-        }
-
-        table.put_item(Item=item)
-        return {
-            "statusCode": 200,
-            "body": json.dumps(item),
-        }
-    except Exception as e:
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    table.put_item(Item=item)
+    return item
 
 
-def get_item(event):
-    item_id = event["queryStringParameters"].get("id")
+@app.get("/")
+def get_item():
+    logger.info("Getting a cash session")
+    item_id = app.current_event["queryStringParameters"].get("id")
     if not item_id:
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"error": "The 'id' query parameter is required"}),
-        }
+        raise BadRequestError("The 'id' field is required")
 
-    try:
-        response = table.get_item(Key={"id": item_id})
-        item = response.get("Item")
-        if not item:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": "Item not found"}),
-            }
+    response = table.get_item(Key={"id": item_id})
+    item = response.get("Item")
+    item = json.loads(json.dumps(item, default=decimal_default))
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps(item, default=decimal_default),
-        }
-    except Exception as e:
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    if not item:
+        raise NotFoundError
+
+    return item
 
 
-def join_session(event):
-    body = json.loads(event["body"])
-    item_id = event["queryStringParameters"].get("id")
+@app.put("/join-session")
+def join_session():
+    logger.info("Joining a session")
+    body = json.loads(app.current_event["body"])
+    item_id = app.current_event["queryStringParameters"].get("id")
     username = body.get("userName")
     if not item_id or not username:
+        raise BadRequestError("The 'id' and 'userName' fields are required")
+
+    response = table.get_item(Key={"id": item_id})
+    item = response.get("Item")
+    if not item:
         return {
-            "statusCode": 400,
-            "body": json.dumps(
-                {"error": "The 'id', 'userId', and 'expense' fields are required"}
-            ),
+            "statusCode": 404,
+            "body": json.dumps({"error": "Item not found"}),
         }
-    try:
-        response = table.get_item(Key={"id": item_id})
-        item = response.get("Item")
-        if not item:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": "Item not found"}),
-            }
-        user_id = generate_unique_id()
-        new_user = {
-            "id": user_id,
-            "name": username,
-        }
-        item["users"].append(new_user)
-        table.put_item(Item=item)
-        return {
-            "statusCode": 200,
-            "body": json.dumps(item, default=decimal_default),
-        }
-    except Exception as e:
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    user_id = generate_unique_id()
+    new_user = {
+        "id": user_id,
+        "name": username,
+    }
+    item["users"].append(new_user)
+    table.put_item(Item=item)
+
+    item = json.loads(
+        json.dumps(item, default=decimal_default)
+    )  # parse decimals correctly
+    return item
 
 
-def add_expense(event):
-    body = json.loads(event["body"])
-    item_id = event["queryStringParameters"].get("id")
+@app.put("/add-expense")
+def add_expense():
+    logger.info("Adding an expense")
+    body = json.loads(app.current_event["body"])
+    item_id = app.current_event["queryStringParameters"].get("id")
     amount = body.get("amount")
     user_id = body.get("userId")
 
     if not item_id or not user_id or not amount:
-        return {
-            "statusCode": 400,
-            "body": json.dumps(
-                {"error": "The 'id', 'userId', and 'expense' fields are required"}
-            ),
-        }
+        raise BadRequestError("The 'id', 'userId', and 'expense' fields are required")
 
-    try:
-        response = table.get_item(Key={"id": item_id})
-        item = response.get("Item")
-        if not item:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": "Item not found"}),
-            }
+    response = table.get_item(Key={"id": item_id})
+    item = response.get("Item")
+    if not item:
+        raise NotFoundError("Item not found")
 
-        expense_id = generate_unique_id()
-        new_expense = {
-            "id": expense_id,
-            "userId": user_id,
-            "amount": Decimal(amount),
-        }
+    expense_id = generate_unique_id()
+    new_expense = {
+        "id": expense_id,
+        "userId": user_id,
+        "amount": Decimal(amount),
+    }
 
-        if "expenses" not in item or not item["expenses"]:
-            item["expenses"] = [new_expense]
-        else:
-            item["expenses"].append(new_expense)
+    if "expenses" not in item or not item["expenses"]:
+        item["expenses"] = [new_expense]
+    else:
+        item["expenses"].append(new_expense)
 
-        table.put_item(Item=item)
-        return {
-            "statusCode": 200,
-            "body": json.dumps(item, default=decimal_default),
-        }
-    except Exception as e:
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    table.put_item(Item=item)
+
+    item = json.loads(
+        json.dumps(item, default=decimal_default)
+    )  # parse decimals correctly
+    return item
 
 
-def delete_expense(event):
-    body = json.loads(event["body"])
-    item_id = event["queryStringParameters"].get("id")
+@app.put("/delete-expense")
+def delete_expense():
+    logger.info("Deleting an expense")
+    body = json.loads(app.current_event["body"])
+    item_id = app.current_event["queryStringParameters"].get("id")
     expense_id = body.get("expenseId")
 
     if not item_id or not expense_id:
-        return {
-            "statusCode": 400,
-            "body": json.dumps(
-                {"error": "The 'id' and 'expenseId' fields are required"}
-            ),
-        }
+        raise BadRequestError("The 'id' and 'expenseId' fields are required")
 
-    try:
-        response = table.get_item(Key={"id": item_id})
-        item = response.get("Item")
-        if not item:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": "Item not found"}),
-            }
-        print(item)
+    response = table.get_item(Key={"id": item_id})
+    item = response.get("Item")
+    if not item:
+        raise NotFoundError("Item not found")
+    item["expenses"] = [
+        expense for expense in item["expenses"] if expense["id"] != expense_id
+    ]
+    table.put_item(Item=item)
 
-        item["expenses"] = [
-            expense for expense in item["expenses"] if expense["id"] != expense_id
-        ]
-        print(item)
-        table.put_item(Item=item)
-        return {
-            "statusCode": 200,
-            "body": json.dumps(item, default=decimal_default),
-        }
-    except Exception as e:
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    item = json.loads(
+        json.dumps(item, default=decimal_default)
+    )  # parse decimals correctly
+    return item
 
 
-def main(event, context):
-    http_method = event["httpMethod"]
-    if http_method == "OPTIONS":
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            },
-            "body": "",
-        }
-    elif http_method == "POST":
-        return create(event)
-    elif http_method == "GET":
-        return get_item(event)
-    elif http_method == "PUT":
-        if event["path"] == "/add-expense":
-            return add_expense(event)
-        elif event["path"] == "/join-session":
-            return join_session(event)
-        elif event["path"] == "/delete-expense":
-            return delete_expense(event)
-        else:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "Unsupported path"}),
-            }
-
-
-def generate_unique_id():
-    import uuid
-
-    return str(uuid.uuid4())
+def lambda_handler(event: dict, context: LambdaContext):
+    return app.resolve(event, context)
