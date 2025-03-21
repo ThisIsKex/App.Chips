@@ -2,8 +2,6 @@
 
 **C**ollaborative **H**andling of **I**ndividual **P**ayments and **S**plitting
 
-## Backend setup
-
 
 ## Frontend setup
 
@@ -32,3 +30,25 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Backend setup
+
+```sh
+cd backend
+```
+
+```sh
+uv sync
+```
+
+### Run for development
+
+```sh
+uv run fastapi dev
+```
+
+Attention: Will not ramp up because region for DynamoDB is missing
+
+## Deployment
+
+TBD
