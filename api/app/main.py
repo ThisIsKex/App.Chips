@@ -5,17 +5,36 @@ import boto3
 
 from decimal import Decimal
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
 from app.utils import decimal_default, generate_unique_id
-from app.models import BadRequestError, HelloResponse, NotFoundError
+from app.models import (
+    AddExpenseRequest,
+    CreateCashSessionRequest,
+    DeleteExpenseRequest,
+    HelloResponse,
+    JoinCashSessionRequest,
+)
+from app.error_models import BadRequestError, NotFoundError
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["DYNAMODB_TABLE"])
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+origins = [
+    "*",
+]
+
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 handler = Mangum(app)
 
 
@@ -25,18 +44,15 @@ def health_check() -> HelloResponse:
 
 
 @app.post("/")
-def create():
+def create(request: CreateCashSessionRequest) -> dict:
     logger.info("Creating a new cash session")
-    body = json.loads(app.current_event["body"])
-    name = body["name"]
-    users = body["users"]
     id = generate_unique_id()
     user_id = generate_unique_id()
 
     item = {
         "id": id,
-        "name": name,
-        "users": [{"id": user_id, "name": users[0]}],
+        "name": request.name,
+        "users": [{"id": user_id, "name": request.users[0]}],
         "expenses": [],
     }
 
@@ -45,13 +61,12 @@ def create():
 
 
 @app.get("/")
-def get_item():
+def get_item(id: str):
     logger.info("Getting a cash session")
-    item_id = app.current_event["queryStringParameters"].get("id")
-    if not item_id:
+    if not id:
         raise BadRequestError("The 'id' field is required")
 
-    response = table.get_item(Key={"id": item_id})
+    response = table.get_item(Key={"id": id})
     item = response.get("Item")
     item = json.loads(json.dumps(item, default=decimal_default))
 
@@ -62,15 +77,13 @@ def get_item():
 
 
 @app.put("/join-session")
-def join_session():
+def join_session(id: str, request: JoinCashSessionRequest) -> dict:
     logger.info("Joining a session")
-    body = json.loads(app.current_event["body"])
-    item_id = app.current_event["queryStringParameters"].get("id")
-    username = body.get("userName")
-    if not item_id or not username:
+    username = request.userName
+    if not id or not username:
         raise BadRequestError("The 'id' and 'userName' fields are required")
 
-    response = table.get_item(Key={"id": item_id})
+    response = table.get_item(Key={"id": id})
     item = response.get("Item")
     if not item:
         return {
@@ -92,17 +105,15 @@ def join_session():
 
 
 @app.put("/add-expense")
-def add_expense():
+def add_expense(id: str, request: AddExpenseRequest) -> dict:
     logger.info("Adding an expense")
-    body = json.loads(app.current_event["body"])
-    item_id = app.current_event["queryStringParameters"].get("id")
-    amount = body.get("amount")
-    user_id = body.get("userId")
+    amount = request.amount
+    user_id = request.userId
 
-    if not item_id or not user_id or not amount:
+    if not id or not user_id or not amount:
         raise BadRequestError("The 'id', 'userId', and 'expense' fields are required")
 
-    response = table.get_item(Key={"id": item_id})
+    response = table.get_item(Key={"id": id})
     item = response.get("Item")
     if not item:
         raise NotFoundError("Item not found")
@@ -128,16 +139,14 @@ def add_expense():
 
 
 @app.put("/delete-expense")
-def delete_expense():
+def delete_expense(id: str, request: DeleteExpenseRequest) -> dict:
     logger.info("Deleting an expense")
-    body = json.loads(app.current_event["body"])
-    item_id = app.current_event["queryStringParameters"].get("id")
-    expense_id = body.get("expenseId")
+    expense_id = request.expenseId
 
-    if not item_id or not expense_id:
+    if not id or not expense_id:
         raise BadRequestError("The 'id' and 'expenseId' fields are required")
 
-    response = table.get_item(Key={"id": item_id})
+    response = table.get_item(Key={"id": id})
     item = response.get("Item")
     if not item:
         raise NotFoundError("Item not found")

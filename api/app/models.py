@@ -5,17 +5,19 @@ class HelloResponse(BaseModel):
     message: str
 
 
-class HelloRequest(BaseModel):
-    message: str = Field(..., description="Message to return")
+class CreateCashSessionRequest(BaseModel):
+    name: str = Field(..., description="The name of the cash session")
+    users: list[str] = Field(..., description="The users in the cash session")
 
 
-class BadRequestError(Exception):
-    def __init__(self, message):
-        self.message = message
-        self.status_code = 400
+class JoinCashSessionRequest(BaseModel):
+    userName: str = Field(..., description="The name of the user joining the session")
 
 
-class NotFoundError(Exception):
-    def __init__(self):
-        self.message = "Item not found"
-        self.status_code = 404
+class AddExpenseRequest(BaseModel):
+    amount: float = Field(..., description="The amount of the expense")
+    userId: str = Field(..., description="The user who paid for the expense")
+
+
+class DeleteExpenseRequest(BaseModel):
+    expenseId: str = Field(..., description="The ID of the expense to delete")

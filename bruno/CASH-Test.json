@@ -1,0 +1,198 @@
+{
+  "name": "CASH-Test",
+  "version": "1",
+  "items": [
+    {
+      "type": "http",
+      "name": "Health check",
+      "seq": 5,
+      "request": {
+        "url": "https://gh4utncyb0.execute-api.eu-central-1.amazonaws.com/health-check",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Create",
+      "seq": 6,
+      "request": {
+        "url": "https://gh4utncyb0.execute-api.eu-central-1.amazonaws.com",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"name\": \"test\",\n  \"users\": [\"keks\"]\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Get Session",
+      "seq": 7,
+      "request": {
+        "url": "https://gh4utncyb0.execute-api.eu-central-1.amazonaws.com?id=54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+        "method": "GET",
+        "headers": [],
+        "params": [
+          {
+            "name": "id",
+            "value": "54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+            "type": "query",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Join Session",
+      "seq": 8,
+      "request": {
+        "url": "https://gh4utncyb0.execute-api.eu-central-1.amazonaws.com/join-session?id=54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+        "method": "PUT",
+        "headers": [],
+        "params": [
+          {
+            "name": "id",
+            "value": "54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+            "type": "query",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"userName\": \"hello\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Add Expense",
+      "seq": 6,
+      "request": {
+        "url": "https://gh4utncyb0.execute-api.eu-central-1.amazonaws.com/add-expense?id=54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+        "method": "PUT",
+        "headers": [],
+        "params": [
+          {
+            "name": "id",
+            "value": "54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+            "type": "query",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"amount\": 20.25,\n  \"userId\": \"726b95a9-9174-425f-b0b6-93d5e5809b8b\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Delete Expense",
+      "seq": 7,
+      "request": {
+        "url": "https://gh4utncyb0.execute-api.eu-central-1.amazonaws.com/delete-expense?id=54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+        "method": "PUT",
+        "headers": [],
+        "params": [
+          {
+            "name": "id",
+            "value": "54fb1414-e3e5-48ea-9784-f9e52a3bef5b",
+            "type": "query",
+            "enabled": true
+          }
+        ],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"expenseId\": \"d3c74e4d-a390-4dc1-8b8b-408f80dd5c89\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    }
+  ],
+  "environments": [],
+  "brunoConfig": {
+    "version": "1",
+    "name": "CASH-Test",
+    "type": "collection",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ]
+  }
+}

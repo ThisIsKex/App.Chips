@@ -21,8 +21,10 @@ def create_deployment_artifact():
     )
 
     os.chdir("deployment_artifacts")
+
+    # "uv pip install --no-installer-metadata --no-compile-bytecode --python-platform aarch64-manylinux2014 --python 3.13 --target packages -r requirements.txt"
     os.system(
-        "uv pip install --no-installer-metadata --no-compile-bytecode --python-platform aarch64-manylinux2014 --python 3.13 --target packages -r requirements.txt"
+        "uv pip install --no-installer-metadata --no-compile-bytecode --python-platform x86_64-manylinux_2_38 --python 3.13 --target packages -r requirements.txt"
     )
 
     os.chdir("packages")
