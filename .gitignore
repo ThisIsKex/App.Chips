@@ -57,3 +57,4 @@ deployment/**/*.zip
 deployment/package/*
 
 .env
+.venv

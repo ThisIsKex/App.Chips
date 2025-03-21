@@ -14,16 +14,14 @@ resource "aws_dynamodb_table" "cash_sessions" {
   }
 }
 
-
 resource "aws_lambda_function" "cash_session" {
   function_name = "${var.project}-backend"
-  handler       = "cash_session_handler.lambda_handler"
-  runtime       = "python3.9"
+  handler       = "app.main.lambda_handler"
+  runtime       = "python3.13"
   role          = aws_iam_role.lambda_exec.arn
 
-  # filename = "${path.module}/../../api/cash_session_handler.zip" 
-  source_code_hash = filebase64sha256("cash_session_handler.zip")
-  filename         = "cash_session_handler.zip"
+  source_code_hash = filebase64sha256("deployment_artifact.zip")
+  filename         = "deployment_artifact.zip"
 
   environment {
     variables = {
