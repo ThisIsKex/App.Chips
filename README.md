@@ -2,11 +2,17 @@
 
 **C**ollaborative **H**andling of **I**ndividual **P**ayments and **S**plitting
 
-## Project Setup
+## Backend setup
+
+
+## Frontend setup
+
+```sh
+cd frontend
+```
 
 ```sh
 npm install
-amplify push
 ```
 
 ### Compile and Hot-Reload for Development
@@ -26,7 +32,3 @@ npm run build
 ```sh
 npm run lint
 ```
-
-## Deployment
-
-It is necessary that at least one env exist in the Amplify App. Otherwise the pipeline is not able to checkout the project.

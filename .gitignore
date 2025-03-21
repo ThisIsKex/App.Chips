@@ -57,3 +57,5 @@ deployment/**/*.zip
 deployment/package/*
 
 .env
+.venv
+__pycache__
