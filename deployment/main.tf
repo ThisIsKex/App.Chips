@@ -16,7 +16,7 @@ resource "aws_dynamodb_table" "cash_sessions" {
 
 resource "aws_lambda_function" "cash_session" {
   function_name = "${var.project}-backend"
-  handler       = "app.main.lambda_handler"
+  handler       = "app.main.handler"
   runtime       = "python3.13"
   role          = aws_iam_role.lambda_exec.arn
 

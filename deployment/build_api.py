@@ -1,9 +1,19 @@
 import os
 import shutil
+import zipfile
+
+EXCLUDED_FILES = [
+    ".dist-info",
+    ".pyc",
+    ".pyo",
+    "__pycache__",
+    ".DS_Store",
+]
 
 
 def create_deployment_artifact():
     os.chdir("../api")
+    os.system("uv sync")
     os.makedirs("deployment_artifacts", exist_ok=True)
 
     os.system(
@@ -15,26 +25,26 @@ def create_deployment_artifact():
         "uv pip install --no-installer-metadata --no-compile-bytecode --python-platform aarch64-manylinux2014 --python 3.13 --target packages -r requirements.txt"
     )
 
-    shutil.make_archive(
-        "../deployment_artifact",
-        "zip",
-        "packages",
-        exclude=["*.dist-info/*", "*.pyc", "*.pyo", "__pycache__/*", ".DS_Store"],
-    )
+    os.chdir("packages")
+
+    with zipfile.ZipFile("../deployment_artifact.zip", "w") as zipf:
+        for root, dirs, files in os.walk("."):
+            for file in files:
+                if not any(
+                    excluded in os.path.join(root, file) for excluded in EXCLUDED_FILES
+                ):
+                    zipf.write(os.path.join(root, file))
 
     os.chdir("..")
-    shutil.make_archive(
-        "deployment_artifacts/deployment_artifact",
-        "zip",
-        "app",
-        exclude=[
-            "app/*.dist-info/*",
-            "app/*.pyc",
-            "app/*.pyo",
-            "app/__pycache__/*",
-            "app/.DS_Store",
-        ],
-    )
+    os.chdir("..")
+
+    with zipfile.ZipFile("deployment_artifacts/deployment_artifact.zip", "a") as zipf:
+        for root, dirs, files in os.walk("app"):
+            for file in files:
+                if not any(
+                    excluded in os.path.join(root, file) for excluded in EXCLUDED_FILES
+                ):
+                    zipf.write(os.path.join(root, file))
 
     shutil.move(
         "deployment_artifacts/deployment_artifact.zip",

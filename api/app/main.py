@@ -1,39 +1,27 @@
+import logging
 import json
 import os
-import uuid
-from decimal import Decimal
-
 import boto3
-from aws_lambda_powertools import Logger
-from aws_lambda_powertools.event_handler import APIGatewayRestResolver, CORSConfig
-from aws_lambda_powertools.event_handler.exceptions import (
-    BadRequestError,
-    NotFoundError,
-)
-from aws_lambda_powertools.utilities.typing import LambdaContext
 
-from api.app.models import HelloResponse
+from decimal import Decimal
+from fastapi import FastAPI
+from mangum import Mangum
+
+from app.utils import decimal_default, generate_unique_id
+from app.models import BadRequestError, HelloResponse, NotFoundError
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["DYNAMODB_TABLE"])
-logger = Logger()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-cors_config = CORSConfig(
-    allow_origin="*",
-)
-app = APIGatewayRestResolver(cors=cors_config)
-
-test = HelloResponse(message="Hello, World!")
+app = FastAPI()
+handler = Mangum(app)
 
 
-def generate_unique_id() -> str:
-    return str(uuid.uuid4())
-
-
-def decimal_default(obj):
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError
+@app.get("/health-check")
+def health_check() -> HelloResponse:
+    return HelloResponse(message="Hello, World!")
 
 
 @app.post("/")
@@ -162,7 +150,3 @@ def delete_expense():
         json.dumps(item, default=decimal_default)
     )  # parse decimals correctly
     return item
-
-
-def lambda_handler(event: dict, context: LambdaContext):
-    return app.resolve(event, context)
