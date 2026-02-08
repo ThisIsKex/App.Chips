@@ -124,7 +124,7 @@ async function createSession() {
 
   isLoading.value = true;
   const createSessionResult = await cashSessionStore.create({ name: sessionName.value, users: [username.value] });
-  localStorage.setItem(createSessionResult.id, createSessionResult.users[0].id);
+  localStorage.setItem(createSessionResult.id, createSessionResult.users[0]!.id);
   isLoading.value = false;
 
   router.push({ name: "session", params: { id: createSessionResult.id } });
