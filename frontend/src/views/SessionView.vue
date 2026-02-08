@@ -1,6 +1,7 @@
 <template>
-  <loading-overlay :show="isLoading" />
-  <v-row v-if="!isLoading && session && currentUser" justify="center">
+  <div>
+    <loading-overlay :show="isLoading" />
+    <v-row v-if="!isLoading && session && currentUser" justify="center">
     <user-expenses-dialog :current-user="currentUser" :expenses="session.expenses" @delete:expenses="deleteExpense"
       v-model:open="userExpensesDialogOpen" />
     <div class="share-button">
@@ -24,6 +25,7 @@
       </v-container>
     </v-col>
   </v-row>
+  </div>
 </template>
 <script setup lang="ts">
 import CreateExpense from "../components/CreateExpense.vue";
